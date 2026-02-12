@@ -2,4 +2,4 @@
 description: Fetch and save YouTube transcript
 ---
 
-Extract the transcript from the YouTube URL at $1 using the Ruby tool and save it to ~/Downloads/yttx.
+Extract the transcript from the YouTube URL at $1 by running `ruby ~/.agents/opencode/tools/yttx.rb "$1"` to save it to ~/Downloads/yttx.

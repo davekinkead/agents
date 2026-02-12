@@ -24,8 +24,14 @@ def get_video_title(url)
   response = Net::HTTP.get_response(uri)
   return 'unknown' unless response.is_a?(Net::HTTPSuccess)
 
-  response.body[%r{<title>(.+?)</title>}, 1]&.strip&.gsub(/ - YouTube$/, '')&.gsub(/[^\w\s-]/,
-                                                                                   '')&.squeeze(' ') || 'unknown'
+  # Try JSON-LD structured data first (modern YouTube)
+  # Match JSON-LD "name" key, handling escaped quotes
+  name_match = response.body.match(/\\?"name\\?":\s*:\s*"(.+?)"/i)
+  return name_match&.[](1)&.strip if name_match
+
+  # Fallback to old <title> tag
+  title_match = response.body.match(%r{<title>(.+?)</title>})
+  title_match&.[](1)&.strip if title_match
 rescue StandardError
   'unknown'
 end
@@ -42,7 +48,7 @@ transcript = YoutubeRb::Transcript.fetch(video_id, languages: ['en'])
 abort 'No transcript found for this video' if transcript.nil? || transcript.length.zero?
 
 title = get_video_title(url)
-sanitized_title = title.downcase.gsub(/\s+/, '_')
+sanitized_title = title.downcase.gsub(/[^a-z0-9]/, '-').gsub(/-+/, '-')
 filepath = File.join(ENV['HOME'], 'Downloads', 'yttx', "#{sanitized_title}.srt")
 
 FileUtils.mkdir_p(File.dirname(filepath))
