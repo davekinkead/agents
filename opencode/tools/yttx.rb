@@ -44,7 +44,12 @@ abort 'Invalid YouTube URL' unless video_id
 
 puts "Fetching transcript for video: #{video_id}"
 
-transcript = YoutubeRb::Transcript.fetch(video_id, languages: ['en'])
+begin
+  transcript = YoutubeRb::Transcript.fetch(video_id, languages: ['en'])
+rescue YoutubeRb::Transcript::NoTranscriptFound
+  puts 'No English transcript found, trying French with translation...'
+  transcript = YoutubeRb::Transcript.fetch(video_id, languages: ['en'], translation_language: 'en')
+end
 abort 'No transcript found for this video' if transcript.nil? || transcript.length.zero?
 
 title = get_video_title(url)
