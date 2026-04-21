@@ -10,8 +10,10 @@ def extract_video_id(url)
 
   if uri.host.include?('youtu.be')
     uri.path[1..-1]
+  elsif uri.path&.start_with?('/shorts/')
+    uri.path.split('/').last
   else
-    uri.query.split('&').find do |p|
+    uri.query&.split('&')&.find do |p|
       p.start_with?('v=')
     end&.split('=')&.last
   end
